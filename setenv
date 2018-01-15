@@ -67,4 +67,4 @@ export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BASEDIR"
 cd build
 
 echo "regolith environment configured To build, run: "
-echo "  bitbake regolith-image"
+echo "  bitbake regolith-core-image"
