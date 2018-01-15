@@ -3,7 +3,7 @@
 if [ -n "${BASEDIR}" ]; then
 	echo "regolith environment already loaded"
 	echo "To reload, start a new shell and source this script again."
-	exit 1
+	return 1
 fi
 
 export BASDIR=$(pwd)
@@ -13,7 +13,7 @@ if [ ! -d ${OEROOT} ]; then
 	echo "Can't find ${OEROOT}"
 	echo "This script must be sourced at the top regolith directory."
 	unset BASEDIR OEROOT
-	exit 1
+	return 1
 fi
 
 # create necessary directories
