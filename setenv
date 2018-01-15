@@ -6,7 +6,7 @@ if [ -n "${BASEDIR}" ]; then
 	return 1
 fi
 
-export BASDIR=$(pwd)
+export BASEDIR=$(pwd)
 export OEROOT=${BASEDIR}/sources/poky
 
 if [ ! -d ${OEROOT} ]; then
