@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [ -n "${BASEDIR}" ]; then
+	echo "regolith environment already loaded"
+	echo "To reload, start a new shell and source this script again."
+	exit 1
+fi
+
+export BASDIR=$(pwd)
+export OEROOT=${BASEDIR}/sources/poky
+
+if [ ! -d ${OEROOT} ]; then
+	echo "Can't find ${OEROOT}"
+	echo "This script must be sourced at the top regolith directory."
+	unset BASEDIR OEROOT
+	exit 1
+fi
+
+# create necessary directories
+mkdir -p downloads
+mkdir -p build/conf
+
+dist_local_conf=${BASEDIR}/sources/regolith-setup/local.conf
+dist_bblayers_conf=${BASEDIR}/sources/regolith-setup/bblayers.conf
+
+build_local_conf=build/conf/local.conf
+build_bblayers_conf=build/conf/bblayers.conf
+
+update_local_conf() {
+	echo "Copying ${dist_local_conf} to ${build_local_conf}"
+	cp ${dist_local_conf} ${build_local_conf}
+}
+
+update_bblayers_conf() {
+	echo "Copying $dist_bblayers_conf to $build_bblayers_conf"
+	cp $dist_bblayers_conf $build_bblayers_conf
+}
+
+# check if local.conf needs to be installed or updated
+if ! [ -f $build_local_conf ]; then
+	update_local_conf
+elif [ $dist_local_conf -nt $build_local_conf ]; then
+	response=y
+	read -p "$dist_local_conf has been updated, overwrite $build_local_conf with latest? (y/N) " response
+	if [[ $response =~ ^y$ || $response =~ ^yes$ ]]; then
+	    update_local_conf
+	fi
+fi
+
+# check if bblayers.conf needs to be installed/updated
+if ! [ -f $build_bblayers_conf ]; then
+    update_bblayers_conf
+elif [ $dist_bblayers_conf -nt $build_bblayers_conf ]; then
+    response=y
+    read -p "$dist_bblayers_conf has been updated, overwrite $build_bblayers_conf with latest? (y/N) " response
+    if [[ $response =~ ^y$ || $response =~ ^yes$ ]]; then
+        update_bblayers_conf
+    fi
+fi
+
+# load yocto environment
+. $OEROOT/scripts/oe-buildenv-internal || { unset BASEDIR OEROOT; return 1; }
+unset OEROOT
+# add BASEDIR to bitbake variables
+export BB_ENV_EXTRAWHITE="$BB_ENV_EXTRAWHITE BASEDIR"
+
+cd build
+
+echo "regolith environment configured To build, run: "
+echo "  bitbake regolith-image"
